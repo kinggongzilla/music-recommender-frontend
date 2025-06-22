@@ -10,7 +10,7 @@ function Profile(){
         if(savedUsername) {
             setUsername(savedUsername);
 
-            fetch(`http://127.0.0.1:5000/playlists?username=${savedUsername}`)
+            fetch(`http://127.0.0.1:5001/playlists?username=${savedUsername}`)
             .then(res => res.json())
             .then(data => {
                 setPlaylistCount(data.length);
@@ -26,7 +26,7 @@ function Profile(){
         if(!confirmClear) return;
 
         try{
-            await fetch('http://127.0.0.1:5000/clear_playlists', {
+            await fetch('http://127.0.0.1:5001/clear_playlists', {
                 method: 'POST'
             });
             alert("All playlists deleted.");

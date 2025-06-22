@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { FaPlay, FaTrash } from "react-icons/fa";
+import { FaEdit, FaPlay, FaSave, FaTrash } from "react-icons/fa";
 
 function Playlist(){
     //const[songs, setSongs] = useState([]);
     const audioRefs = useRef({});
     const[playlists, setPlaylists] = useState([]);
+    const[editingId, setEditingId] = useState(null);
+    const[editName, setEditName] = useState('');
+    const[likedSongs, setLikedSongs] = useState(() => JSON.parse(localStorage.getItem('likedSongs')) || {});
 
     useEffect(() =>{
 
@@ -16,9 +19,12 @@ function Playlist(){
             }
 
             try{
-                const res = await fetch(`http://127.0.0.1:5000/playlists?username=${username}`);
+                const res = await fetch(`http://127.0.0.1:5001/playlists?username=${username}`);
                 const data = await res.json();
-                setPlaylists(data);
+                setPlaylists(data.map(p => ({
+                    ...p,
+                    songs: typeof p.songs === 'string' ? JSON.parse(p.songs) : p.songs || []
+                })));
             }catch(error){
                 console.error("fetch failed", error);
             }
@@ -44,7 +50,7 @@ function Playlist(){
     const deletePlaylist = async(id) => {
         if(!window.confirm("Are you sure you want to delete this playlist?"))return;
         try{
-            const res = await fetch(`http://127.0.0.1:5000/playlist/${id}`, {
+            const res = await fetch(`http://127.0.0.1:5001/playlist/${id}`, {
                 method: 'DELETE',
             });
             const data = await res.json();
@@ -62,37 +68,73 @@ function Playlist(){
         alert("Shareable link copied to clipboard");
     };
 
+    const toggleLike =(title) => {
+        setLikedSongs( prev =>{
+            const updated ={...prev, [title]: !prev[title] };
+            localStorage.setItem('likedSongs', JSON.stringify(updated));
+            return updated;
+        });
+    };
+
+    const startEditing = (id, currentName) => {
+        setEditingId(id);
+        setEditName(currentName);
+    };
+
+    const saveNewName = async (id) => {
+        try{
+            await fetch(`http://127.0.0.1:5001/playlist/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name: editName}),
+            });
+            setPlaylists((prev)=> prev.map(p => p.id === id ? {...p, name: editName}: p));
+            setEditingId(null);
+            setEditName('');
+        }catch(error){
+            alert('Rename failed.');
+        }
+    };
+
     return(
         <div className="centered-card">
-            <h2 className="subtitle"> 🎧 Your Playlists</h2>
+            <h2 className = "subtitle">🎧 Your Playlists</h2>
             {playlists.length === 0 ? (
                 <p>No playlists saved yet.</p>
             ): (
                 playlists.map((pl) => (
                     <div key={pl.id} style={cardStyle}>
                         <div style={headerStyle}>
-                            <h3 style={{margin: 0}}>{pl.name}</h3>
-                            <button onClick={() => deletePlaylist(pl.id)} style={iconButton}> <FaTrash /></button>
-                            {pl.share_id && (
-                                <button onClick={() => copyShareLink(pl.share_id)} style={{marginLeft: "1rem"}}> Share </button>
-                            )}
+                            {editingId == pl.id ? (
+                                <>
+                                    <input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                                    <button onClick={()=> saveNewName(pl.id)}> <FaSave /></button>
+                                </>
+                            ): (
+                                <>
+                                    <h3 style ={{margin : 0}}> {pl.name}</h3>
+                                    <button onClick={() => startEditing(pl.id, pl.name)} style={iconButton}><FaEdit /></button>
+                                </>
+                            )
+                        }
+                        <button onClick={() => deletePlaylist(pl.id)} style={iconButton}><FaTrash /></button>
+                        {pl.share_id && (
+                            <button onClick={() => copyShareLink(pl.share_id)} style={{marginLeft: "1rem"}}>🔗 Share</button>
+                        )}
                         </div>
-                        <ul style={{paddingLeft: 0, listStyle: "none", marginTop: "1rem"}}>
-                            {pl.songs.map((song, i) => {
-                                const isObj = typeof song ==='object';
-                                const label = isObj ?`${song.title} - ${song.artist}` : song;
-                                const url = isObj ? song.url : "";
-
-                                return(
-                                    <li key={i} style ={songItemStyle}>
-                                        <div style={{display: "flex", alignItems:"center", gap:"0.5rem"}}>
-                                            <button onClick={() => togglePlay(`${pl.id}-${i}`)} style= {iconButton}><FaPlay /></button>
+                        <ul style= {{ listStyle: 'none', padding: 0}}>
+                            {pl.songs.map((song, i)=>{
+                                const label = typeof song === 'object' ? `${song.title} - ${song.artist}` : song;
+                                const url = typeof song === 'object' ? song.url : '';
+                                const id = `${pl.id}-${i}`;
+                                return (
+                                    <li key={i} style={songItemStyle}>
+                                        <div style={{display: "flex", alignItems: "center", gap: "0.5rem"}}>
+                                            <button onClick={() => togglePlay(id)} style={iconButton}><FaPlay /></button>
                                             <span>{label}</span>
+                                            <button onClick={() => toggleLike(song.title)} style={iconButton}>{likedSongs[song.title] ? '💖' : '🤍'}</button>
                                         </div>
-                                        {url && (
-                                            <audio ref={(el)=>(audioRefs.current[`${pl.id}-${i}`] =el)}
-                                            src ={url}/>
-                                        )}
+                                        {url && <audio ref={ el => (audioRefs.current[id] = el)} src={url} />}
                                     </li>
                                 );
                             })}

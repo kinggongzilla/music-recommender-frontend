@@ -10,7 +10,7 @@ function SharedPlaylist(){
     useEffect(() => {
         async function fetchShared(){
             try{
-                const res = await fetch(`http://127.0.0.1:5000/shared/${id}`);
+                const res = await fetch(`http://127.0.0.1:5001/shared/${id}`);
                 if(!res.ok){
                     throw new Error("Playlist not found");
                 }

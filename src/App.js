@@ -9,15 +9,6 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import SharedPlaylist from "./SharedPlaylist";
 
 
-/*dummy profile component
-function Profile(){
-  return(
-    <div className="centered-card">
-      <h2 className="subtitle">User Profile</h2>
-      <p>This is your profile section.</p>
-    </div>
-  );
-}*/
 function NavBar({currentView, onNavigate, onLogout, onToggleTheme }){
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -76,7 +67,7 @@ function LoginPage({ onLogin }){
       alert("Passwords don't match");
       return;
     }
-    const url = isRegistering ? 'http://127.0.0.1:5000/register' : 'http://127.0.0.1:5000/login';
+    const url = isRegistering ? 'http://127.0.0.1:5001/register' : 'http://127.0.0.1:5001/login';
     try{
       const response = await fetch(url,{
         method: 'POST',
@@ -106,7 +97,7 @@ function LoginPage({ onLogin }){
 
   return (
     <div className="centered-card">
-      <h1 className="main-title">Brewtune</h1>
+      <h1 className="main-title"> 🎵 Brewtune</h1>
       <div className="login-form">
         <input
           type="text"
@@ -159,7 +150,7 @@ function MusicRecommender() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [playlistName, setPlaylistName] = useState('');
-
+  const [likedSongs, setLikedSongs] = useState(() => JSON.parse(localStorage.getItem('likedSongs')) || {});
   const [currentIndex, setCurrentIndex] = useState(0);
   const audioRef = useRef(null);
   const [favorites, setFavorites] = useState(() => {
@@ -178,7 +169,7 @@ function MusicRecommender() {
     await new Promise((resolve)=>setTimeout(resolve, 500));
     
     try{
-      const res = await fetch('http://localhost:5000/recommend',
+      const res = await fetch('http://localhost:5001/recommend',
         {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -222,7 +213,7 @@ function MusicRecommender() {
     );
 
       try{
-        const res = await fetch('http://localhost:5000/playlist', {
+        const res = await fetch('http://localhost:5001/playlist', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -245,7 +236,7 @@ function MusicRecommender() {
     setSongs([]);
     localStorage.removeItem('songs');
   };
-  
+
   return (
     <div className="centered-card">
       <h2 className="subtitle">Tell us your mood or activity</h2>
@@ -339,5 +330,35 @@ function App(){
   );
   
 }
+
+const likeSong = async (song) => {
+  const username = localStorage.getItem("username");
+  if (!username){
+    alert ("Please log in to like songs !");
+    return;
+  }
+
+  try{
+    const res = await fetch("http://localhost:5001/like", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body:JSON.stringify({
+        username,
+        title:song.title,
+        artist:song.artist || "Unknown",
+        url: song.url,
+      }),
+    });
+
+    const data = await res.json();
+    if(res.ok){
+      alert(`You liked ${song.title}`);
+    }else{
+      alert(data.message || "Couldn't like song")
+    }
+  }catch(error){
+    alert("Something went wrong");
+  }
+};
 
 export default App;
