@@ -1,43 +1,71 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+#  Music Recommender Frontend
 
-## Available Scripts
+This project is the frontend for the Music Recommender system, built with [Create React App](https://github.com/facebook/create-react-app). It provides the user interface for interacting with the music recommendation engine.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Getting Started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Prerequisites
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- [Node.js](https://nodejs.org/) (v14 or newer recommended)
+- [npm](https://www.npmjs.com/)
+- [GTZAN Music Genre Dataset](http://marsyas.info/downloads/datasets.html) (required for audio playback)
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 📦 Installation
 
-### `npm run build`
+1. **Clone the repository**
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+   ```bash
+   git clone https://github.com/yourusername/music-recommender-frontend.git
+   cd music-recommender-frontend
+   ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. **Install dependencies**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+   ```bash
+   npm install
+   ```
 
-### `npm run eject`
+3. **Download the GTZAN Dataset**
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+   - Download the dataset from [this link](http://marsyas.info/downloads/datasets.html).
+   - Extract the contents locally.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+4. **Place the Dataset in the Public Folder**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+   The dataset must be structured as follows inside the project:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+   ```
+   public/
+   └── gtzan_dataset/
+       └── 1/
+           └── Data/
+               └── genres_original/
+                   ├── blues/
+                   │   └── blues.00000.wav
+                   ├── classical/
+                   ├── country/
+                   └── ...
+   ```
+
+   ✅ **Example of a valid file path:**
+
+   ```
+   public/gtzan_dataset/1/Data/genres_original/blues/blues.00000.wav
+   ```
+
+5. **Run the frontend development server**
+
+   ```bash
+   npm start
+   ```
+
+The app will be available at: [http://localhost:3000](http://localhost:3000)
+
 
 ## Learn More
 
